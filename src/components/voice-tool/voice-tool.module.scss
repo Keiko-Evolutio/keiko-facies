@@ -1,0 +1,77 @@
+.voiceTool {
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #DCFF4A;
+}
+
+.idle {
+  background-color: #DCFF4A;
+  color: #282828;
+  border: solid 8px #DCFF4A;
+  border-radius: 50%;
+  width: 6rem;
+  height: 6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 100;
+  position: absolute;
+  bottom: 56px;
+
+  &:hover {
+    background-color: #282828;
+    border-color: #DCFF4A;
+    color: #DCFF4A;
+  }
+}
+
+@keyframes blink {
+  0% {
+    fill: #27272a;
+  }
+
+  50% {
+    fill: #52525b;
+  }
+
+  100% {
+    fill: #27272a;
+  }
+}
+
+.call {
+  background-color: #DCFF4A;
+  color: #27272a;
+  border: solid 8px #fafafa;
+  border-radius: 50%;
+  width: 6rem;
+  height: 6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 100;
+  position: absolute;
+  bottom: 56px;
+
+  & svg {
+    fill: #fafafa;
+    animation: blink 2s linear infinite;
+  }
+
+
+  &:hover {
+    background-color: #d4d4d8;
+    border-color: #fafafa;
+  }
+}

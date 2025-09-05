@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keiko Cache Clearing Tool</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .success { 
+            background-color: #d4edda; 
+            border: 1px solid #c3e6cb; 
+            color: #155724; 
+        }
+        .error { 
+            background-color: #f8d7da; 
+            border: 1px solid #f5c6cb; 
+            color: #721c24; 
+        }
+        .info { 
+            background-color: #d1ecf1; 
+            border: 1px solid #bee5eb; 
+            color: #0c5460; 
+        }
+        button { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            cursor: pointer; 
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #log { 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 10px; 
+            margin: 10px 0; 
+            height: 300px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Keiko Cache Clearing Tool</h1>
+        
+        <div class="info">
+            <strong>Zweck:</strong> Dieses Tool hilft beim Löschen von Service Worker Caches, 
+            die veraltete 404-Responses für Webhook-Endpunkte enthalten könnten.
+        </div>
+
+        <button onclick="clearAllCaches()">🗑️ Alle Caches löschen</button>
+        <button onclick="updateServiceWorker()">🔄 Service Worker aktualisieren</button>
+        <button onclick="testWebhookEndpoints()">🧪 Webhook-Endpunkte testen</button>
+        <button onclick="clearLog()">📝 Log leeren</button>
+
+        <div id="status"></div>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += logEntry + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(logEntry);
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('status').innerHTML = '';
+        }
+
+        async function clearAllCaches() {
+            log('🧹 Starte Cache-Löschung...');
+            showStatus('Lösche Caches...', 'info');
+
+            try {
+                const cacheNames = await caches.keys();
+                log(`Gefundene Caches: ${cacheNames.length}`);
+                
+                for (const cacheName of cacheNames) {
+                    log(`Lösche Cache: ${cacheName}`);
+                    await caches.delete(cacheName);
+                }
+
+                log('✅ Alle Caches erfolgreich gelöscht');
+                showStatus('✅ Alle Caches erfolgreich gelöscht', 'success');
+            } catch (error) {
+                log(`❌ Fehler beim Löschen der Caches: ${error.message}`);
+                showStatus(`❌ Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        async function updateServiceWorker() {
+            log('🔄 Aktualisiere Service Worker...');
+            showStatus('Aktualisiere Service Worker...', 'info');
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    
+                    if (registration) {
+                        log('Service Worker gefunden, aktualisiere...');
+                        await registration.update();
+                        
+                        // Force activation of new service worker
+                        if (registration.waiting) {
+                            log('Aktiviere neuen Service Worker...');
+                            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                        
+                        log('✅ Service Worker erfolgreich aktualisiert');
+                        showStatus('✅ Service Worker erfolgreich aktualisiert', 'success');
+                    } else {
+                        log('⚠️ Kein Service Worker registriert');
+                        showStatus('⚠️ Kein Service Worker registriert', 'info');
+                    }
+                } else {
+                    log('❌ Service Worker nicht unterstützt');
+                    showStatus('❌ Service Worker nicht unterstützt', 'error');
+                }
+            } catch (error) {
+                log(`❌ Fehler beim Aktualisieren des Service Workers: ${error.message}`);
+                showStatus(`❌ Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWebhookEndpoints() {
+            log('🧪 Teste Webhook-Endpunkte...');
+            showStatus('Teste Webhook-Endpunkte...', 'info');
+
+            const endpoints = [
+                '/api/v1/webhooks/targets',
+                '/api/v1/webhooks/deliveries?limit=100'
+            ];
+
+            const headers = {
+                'X-Scopes': 'webhook:admin:* webhook:targets:manage webhook:dlq:manage webhook:outbound:send:*',
+                'Content-Type': 'application/json'
+            };
+
+            for (const endpoint of endpoints) {
+                try {
+                    log(`Teste: ${endpoint}`);
+                    const response = await fetch(`http://localhost:8000${endpoint}`, {
+                        method: 'GET',
+                        headers: headers
+                    });
+
+                    if (response.ok) {
+                        log(`✅ ${endpoint}: ${response.status} OK`);
+                    } else {
+                        log(`❌ ${endpoint}: ${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    log(`❌ ${endpoint}: Netzwerkfehler - ${error.message}`);
+                }
+            }
+
+            showStatus('🧪 Webhook-Tests abgeschlossen', 'info');
+        }
+
+        // Automatische Initialisierung
+        window.onload = function() {
+            log('📄 Cache Clearing Tool geladen');
+            log('💡 Verwenden Sie die Buttons oben, um Caches zu löschen und Service Worker zu aktualisieren');
+            
+            // Service Worker Status prüfen
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(registration => {
+                    if (registration) {
+                        log(`🔧 Service Worker aktiv: ${registration.active ? 'Ja' : 'Nein'}`);
+                        log(`🔧 Service Worker Scope: ${registration.scope}`);
+                    } else {
+                        log('🔧 Kein Service Worker registriert');
+                    }
+                });
+            }
+        };
+
+        // Service Worker Update Listener
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                log('🔄 Service Worker Controller geändert - Seite wird neu geladen...');
+                window.location.reload();
+            });
+        }
+    </script>
+</body>
+</html>

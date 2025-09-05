@@ -1,0 +1,239 @@
+{
+  "name": "keiko-personal-assistant-frontend",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Frontend für Keiko Personal Assistant mit automatischer API-Client-Generierung und Type-Safe WebSocket Client",
+  "scripts": {
+    "dev": "yarn docker:check && yarn pre-dev && vite",
+    "build": "yarn pre-build && tsc -b && vite build",
+    "build:worklets": "tsc -p tsconfig.worklets.json",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "check:types": "tsc --project tsconfig.app.json --noEmit",
+    "check:types:watch": "tsc --project tsconfig.app.json --noEmit --watch",
+    "check:types:verbose": "tsc --project tsconfig.app.json --noEmit --listFiles",
+    "check:types:strict": "tsc --project tsconfig.app.json --noEmit --strict",
+    "check:types:all": "tsc -b tsconfig.app.json tsconfig.node.json tsconfig.worklets.json",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui",
+    "test:websocket": "yarn test:websocket-types && yarn test:websocket-connection",
+    "test:websocket-types": "tsc --noEmit src/types/websocket-extended.ts && echo '✅ WebSocket types valid'",
+    "test:websocket-connection": "node -e \"const { testWebSocketServer } = require('./dist/websocket/index.js'); testWebSocketServer('ws://localhost:8000/ws').then(r => console.log('✅ WebSocket server available:', r)).catch(e => console.error('✗ WebSocket server unavailable:', e.message))\"",
+    "prepare": "husky install",
+    "generate:api": "node scripts/generate-api-types.cjs",
+    "generate:api:simple": "openapi-typescript http://localhost:3001/frontend/openapi.json -o src/types/api.ts && echo '✅ API types generated' || echo '⚠️  API-Contracts service not available'",
+    "generate:websocket": "echo '✅ WebSocket types are manually maintained in src/types/websocket-extended.ts'",
+    "generate:all": "yarn generate:api && yarn generate:websocket",
+    "validate:api": "node scripts/validate-api-spec.cjs",
+    "validate:asyncapi": "echo '⚠️  AsyncAPI validation - install @asyncapi/cli if needed: npm install -g @asyncapi/cli'",
+    "validate:websocket": "yarn test:websocket-types",
+    "validate:all": "yarn validate:api && yarn validate:asyncapi && yarn validate:websocket && echo '🎉 All validations passed!",
+    "watch:api": "nodemon --watch http://localhost:3001/frontend/openapi.json --exec 'yarn generate:api'",
+    "watch:websocket": "nodemon --watch 'src/types/websocket-extended.ts' --exec 'yarn validate:websocket'",
+    "watch:all": "concurrently \"yarn watch:api\" \"yarn watch:websocket\"",
+    "check:websocket-server": "node -e \"const { testWebSocketServer } = require('./dist/websocket/index.js'); testWebSocketServer('ws://localhost:8000/ws').then(r => console.log('✅ WebSocket server available:', r)).catch(e => console.error('✗ WebSocket server unavailable:', e.message))\"",
+    "check:backend": "curl -f http://localhost:8000/health && echo '✅ Backend available' || echo '⚠️  Backend not available'",
+    "check:all": "yarn check:backend && yarn check:websocket-server",
+    "dev:with-checks": "yarn check:all && yarn dev",
+    "dev:full": "concurrently \"yarn dev\" \"yarn watch:api\"",
+    "dev:silent": "yarn --silent docker:check && yarn --silent pre-dev && vite",
+    "dev:no-docker": "yarn pre-dev && vite",
+    "pre-dev": "yarn generate:api && yarn validate:api",
+    "pre-build": "yarn validate:all && yarn generate:api && yarn check:types",
+    "pre-commit": "lint-staged",
+    "clean": "rimraf dist .vite node_modules/.vite",
+    "clean:types": "rimraf src/types/api.ts",
+    "clean:cache": "rimraf node_modules/.cache .eslintcache",
+    "clean:all": "yarn clean && yarn clean:types && yarn clean:cache",
+    "debug:websocket": "node --inspect-brk -e \"require('./dist/websocket/index.js').getConnectionDiagnostics()\"",
+    "debug:types": "tsc --showConfig && tsc --listFiles --noEmit",
+    "debug:deps": "yarn why",
+    "health": "yarn check:all && yarn validate:all && echo '🎉 All systems healthy!'",
+    "setup": "yarn install && yarn generate:all && yarn validate:all && echo '🚀 Setup complete!'",
+    "analyze": "vite build --mode analyze",
+    "preview:dist": "vite preview --port 4173",
+    "serve": "vite preview",
+    "docker:check": "node scripts/docker-check.cjs",
+    "docker:status": "node scripts/container-manager.cjs status",
+    "docker:start": "node scripts/container-manager.cjs start",
+    "docker:stop": "node scripts/container-manager.cjs stop",
+    "docker:restart": "node scripts/container-manager.cjs restart",
+    "docker:logs": "node scripts/container-manager.cjs logs",
+    "docker:update": "node scripts/container-manager.cjs update",
+    "docker:health": "node scripts/container-manager.cjs health"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@radix-ui/react-hover-card": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "axios": "^1.11.0",
+    "class-variance-authority": "^0.7.1",
+    "classnames": "^2.5.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
+    "immer": "^10.1.1",
+    "lucide-react": "^0.536.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.7.1",
+    "recharts": "^2.12.7",
+    "tailwind-merge": "^3.3.1",
+    "tw-animate-css": "^1.3.6",
+    "uuid": "^11.1.0",
+    "zod": "^4.0.14",
+    "zustand": "^5.0.7"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.0.0",
+    "@asyncapi/cli": "^3.2.0",
+    "@asyncapi/generator": "^2.7.1",
+    "@asyncapi/parser": "^3.4.0",
+    "@eslint/js": "^9.32.0",
+    "@tailwindcss/vite": "^4.1.11",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/classnames": "^2.3.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.1.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.0",
+    "csstype": "^3.1.3",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "jsdom": "^26.1.0",
+    "lint-staged": "^16.1.2",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.1.10",
+    "openapi-types": "^12.1.3",
+    "openapi-typescript": "^7.8.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "rollup-plugin-visualizer": "^6.0.3",
+    "sass": "^1.89.2",
+    "swagger-parser": "^10.0.3",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.9.2",
+    "vite": "^7.0.6",
+    "vite-plugin-svgr": "^4.3.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4",
+    "ws": "^8.18.3",
+    "yarn-upgrade-all": "^0.7.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": "^1.22.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,ts,tsx,json,md,css,scss}": [
+      "prettier --write"
+    ],
+    "src/types/websocket-extended.ts": [
+      "tsc --noEmit"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "yarn type-check && yarn test --run"
+    }
+  },
+  "keywords": [
+    "keiko",
+    "personal-assistant",
+    "ai",
+    "websocket",
+    "typescript",
+    "react",
+    "real-time",
+    "api-client",
+    "type-safe",
+    "vite",
+    "zustand"
+  ],
+  "author": "Keiko Development Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keiko-team/keiko-personal-assistant"
+  },
+  "bugs": {
+    "url": "https://github.com/keiko-team/keiko-personal-assistant/issues"
+  },
+  "homepage": "https://github.com/keiko-team/keiko-personal-assistant#readme",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "config": {
+    "api": {
+      "backend_url": "http://localhost:8000",
+      "websocket_url": "ws://localhost:8000/ws",
+      "openapi_spec": "../backend/openapi.json",
+      "asyncapi_spec": "../api/asyncapi.yaml"
+    },
+    "api_contracts_service": {
+      "url": "http://localhost:3001",
+      "frontend_spec": "/frontend/openapi.json",
+      "timeout": 30000
+    },
+    "development": {
+      "auto_generate": true,
+      "watch_backend": true,
+      "validate_on_build": true,
+      "hot_reload": true
+    },
+    "build": {
+      "source_maps": true,
+      "analyze_bundle": false,
+      "optimize": true
+    }
+  },
+  "volta": {
+    "node": "18.20.4"
+  },
+  "optionalDependencies": {
+    "dexie": "^3.2.4",
+    "workbox-window": "^7.1.0"
+  }
+}

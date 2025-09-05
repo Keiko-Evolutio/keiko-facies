@@ -1,0 +1,85 @@
+{
+  "name": "@keiko/kei-stream",
+  "version": "1.0.0",
+  "description": "KEI-Stream Frontend-Client mit vollständiger Backend-Kompatibilität",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "test": "jest --config jest.config.js",
+    "test:watch": "jest --config jest.config.js --watch",
+    "test:coverage": "jest --config jest.config.js --coverage",
+    "test:ci": "jest --config jest.config.js --coverage --ci --watchAll=false",
+    "test:integration": "jest --config jest.config.js --testNamePattern='Integration'",
+    "test:unit": "jest --config jest.config.js --testPathIgnorePatterns='integration.test.ts'",
+    "test:sse": "jest --config jest.config.js --testNamePattern='SSE'",
+    "test:compression": "jest --config jest.config.js --testNamePattern='Compression'",
+    "test:tracing": "jest --config jest.config.js --testNamePattern='Tracing'",
+    "test:token-bucket": "jest --config jest.config.js --testNamePattern='Token'",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "kei-stream",
+    "websocket",
+    "sse",
+    "streaming",
+    "real-time",
+    "compression",
+    "tracing",
+    "rate-limiting",
+    "typescript",
+    "react"
+  ],
+  "author": "Keiko Personal Assistant Team",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0",
+    "jest-html-reporters": "^3.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "files": [
+    "*.ts",
+    "*.tsx",
+    "!**/__tests__/**",
+    "!jest.config.js",
+    "!package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oscharko/keiko-personal-assistant.git",
+    "directory": "frontend/src/kei-stream"
+  },
+  "bugs": {
+    "url": "https://github.com/oscharko/keiko-personal-assistant/issues"
+  },
+  "homepage": "https://github.com/oscharko/keiko-personal-assistant#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "jest": {
+    "preset": "./jest.config.js"
+  }
+}

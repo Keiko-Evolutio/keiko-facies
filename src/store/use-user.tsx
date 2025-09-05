@@ -1,0 +1,87 @@
+import { useEffect, useState } from 'react';
+import { WEB_ENDPOINT } from '@/store/endpoint';
+import { apiClient } from '@/api/client'
+import { z } from 'zod'
+
+export interface User {
+  key: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
+const availableUsers: { [key: string]: string } = {
+  oscharko: '/images/people/oscharko_anime_05_02.png',
+};
+
+const defaultUser: User = {
+  key: 'oscharko',
+  name: 'Olli',
+  email: 'o.scharkowski@oscharko.de',
+  avatar: '/images/people/oscharko_anime_05_02.png',
+};
+
+const getUser = async (): Promise<User> => {
+  if (WEB_ENDPOINT.startsWith('http://localhost')) {
+    //TODO: check for local json
+    return defaultUser;
+  }
+  const response = await apiClient.get(`${WEB_ENDPOINT}/.auth/me`, z.any()) as any
+  if (!response.ok) {
+    return defaultUser;
+  }
+  const userData = response.data;
+  const email: string = userData[0].user_id;
+  const name: string = userData[0].user_claims
+    .find((claim: any) => claim.typ === 'name')
+    ?.val.toString();
+  const nameKey: string = name.toLowerCase().replace(/\s/g, '-');
+  const userAvatar = availableUsers[nameKey];
+  if (userAvatar) {
+    return {
+      key: nameKey,
+      name: name,
+      email: email,
+      avatar: userAvatar,
+    };
+  } else {
+    return {
+      key: nameKey,
+      name: userData.name,
+      email: userData.email,
+    };
+  }
+};
+
+/**
+ * React hook for fetching and managing user data
+ */
+export const useUser = () => {
+  const [user, setUser] = useState<User>({
+    key: '',
+    name: '',
+    email: '',
+  });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const userData = await getUser();
+        setUser(userData);
+      } catch (err) {
+        setError(err as Error);
+        // on error, set user to default user
+        setUser(defaultUser);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  return { user, loading, error } as const;
+};

@@ -1,0 +1,78 @@
+.background {
+  background-color: #DCFF4A;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  bottom: 15px;
+  width: 290px;
+  border-radius: 10px;
+  border: 1px solid #DCFF4A;
+  transition: background-color 2.5s ease;
+}
+
+.backgroundOpen {
+  background-color: #2e2e2e;
+  transition: background-color 0.9s ease;
+}
+
+.navLogo {
+  position: absolute;
+  bottom: 0;
+}
+
+.navLogoOpen {
+  height: 100px;
+  width: 100px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+
+.toggleContainer {
+  outline: none;
+  border: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  cursor: pointer;
+  position: absolute;
+  top: 23px;
+  left: 35px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.list {
+  list-style: none;
+  padding: 20px;
+  margin: 0;
+  position: absolute;
+  top: 80px;
+  left: 16px;
+  width: 290px;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+.path {
+  fill: transparent;
+  stroke-width: 4;
+  stroke: #2e2e2e;
+  stroke-linecap: round;
+}
+
+.pathOpen {
+  fill: transparent;
+  stroke-width: 3;
+  stroke: #DCFF4A;
+  stroke-linecap: round;
+}
+

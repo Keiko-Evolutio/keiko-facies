@@ -1,0 +1,24 @@
+{
+  "name": "Keiko Personal Assistant",
+  "short_name": "Keiko",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "scope": "/",
+  "description": "Multi-Agent System mit Offline-First Unterstützung",
+  "icons": [
+    {
+      "src": "/icons/brain_black.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo_Keiko_DCFF4A.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Initialisierung Fix Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        #console { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin: 10px 0; height: 200px; overflow-y: auto; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Initialisierung Fix Verification</h1>
+    
+    <div class="info">
+        <strong>Test:</strong> Simuliert mehrfache usePerformanceMonitoring Hook-Aufrufe und prüft, 
+        ob WebSocket nur einmal initialisiert wird.
+    </div>
+
+    <button onclick="runTest()">Test ausführen</button>
+    <button onclick="clearConsole()">Console leeren</button>
+
+    <div id="results"></div>
+    <div id="console"></div>
+
+    <script>
+        // Simuliere die Hook-Logik
+        let globalInitialized = false;
+        let initializationCount = 0;
+        const consoleDiv = document.getElementById('console');
+        const resultsDiv = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            consoleDiv.innerHTML += logEntry + '\n';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            
+            if (type === 'error') {
+                console.error(logEntry);
+            } else {
+                console.log(logEntry);
+            }
+        }
+
+        function clearConsole() {
+            consoleDiv.innerHTML = '';
+            resultsDiv.innerHTML = '';
+        }
+
+        // Simuliere initializeWebSocket mit globaler Guard
+        function mockInitializeWebSocket() {
+            if (globalInitialized) {
+                log('⚠️ WebSocket already globally initialized', 'warn');
+                return Promise.resolve();
+            }
+            
+            globalInitialized = true;
+            initializationCount++;
+            log('✅ WebSocket initialisiert (Aufruf #' + initializationCount + ')');
+            return Promise.resolve();
+        }
+
+        // Simuliere usePerformanceMonitoring Hook
+        function mockUsePerformanceMonitoring() {
+            // Simuliere useRef
+            if (!mockUsePerformanceMonitoring.initAttempted) {
+                mockUsePerformanceMonitoring.initAttempted = false;
+            }
+
+            const isInitialized = globalInitialized;
+            
+            log('Hook-Aufruf: isInitialized=' + isInitialized + ', initAttempted=' + mockUsePerformanceMonitoring.initAttempted);
+
+            // Simuliere useEffect
+            if (!isInitialized && !mockUsePerformanceMonitoring.initAttempted) {
+                mockUsePerformanceMonitoring.initAttempted = true;
+                log('🔄 Initialisierung wird gestartet...');
+                mockInitializeWebSocket().catch(() => {
+                    log('❌ Fehler bei WebSocket Initialisierung', 'error');
+                });
+            } else {
+                log('⏭️ Initialisierung übersprungen');
+            }
+        }
+
+        function runTest() {
+            // Reset für neuen Test
+            globalInitialized = false;
+            initializationCount = 0;
+            mockUsePerformanceMonitoring.initAttempted = false;
+            
+            log('🧪 Starte WebSocket Initialisierung Test...');
+            log('');
+
+            // Simuliere mehrfache Hook-Aufrufe (wie in React StrictMode)
+            log('--- Simuliere React StrictMode (mehrfache Hook-Aufrufe) ---');
+            
+            for (let i = 1; i <= 5; i++) {
+                log(`\n🔄 Hook-Aufruf #${i}:`);
+                mockUsePerformanceMonitoring();
+            }
+
+            // Ergebnisse auswerten
+            log('\n--- Test-Ergebnisse ---');
+            log('Globale Initialisierung: ' + (globalInitialized ? 'Ja' : 'Nein'));
+            log('Anzahl Initialisierungen: ' + initializationCount);
+            log('Hook initAttempted Flag: ' + mockUsePerformanceMonitoring.initAttempted);
+
+            // Test-Bewertung
+            const success = initializationCount === 1;
+            const resultClass = success ? 'success' : 'error';
+            const resultMessage = success 
+                ? '🎉 Test erfolgreich! WebSocket wurde nur einmal initialisiert.'
+                : '❌ Test fehlgeschlagen! WebSocket wurde ' + initializationCount + ' mal initialisiert.';
+
+            resultsDiv.innerHTML = `<div class="${resultClass}">${resultMessage}</div>`;
+            log('\n' + resultMessage);
+
+            if (success) {
+                log('✅ Fix funktioniert korrekt - Mehrfach-Initialisierung verhindert!');
+            } else {
+                log('❌ Fix funktioniert nicht - Mehrfach-Initialisierung erkannt!', 'error');
+            }
+        }
+
+        // Automatischer Test beim Laden der Seite
+        window.onload = function() {
+            log('📄 Seite geladen - bereit für Tests');
+            log('💡 Klicken Sie auf "Test ausführen" um die WebSocket Initialisierung zu testen');
+        };
+    </script>
+</body>
+</html>

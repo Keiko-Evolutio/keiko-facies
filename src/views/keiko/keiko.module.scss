@@ -1,0 +1,28 @@
+@use 'sass:color';
+
+.muteButton {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: solid 1px #f4f4f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+
+.muted {
+  background-color: #27272a;
+  border: solid 1px color.change(#f4f4f5, $alpha: 0.5);
+  color: #f4f4f5;
+}
+
+.unmuted {
+  background-color: #991b1b;
+  border: solid 1px color.change(#f4f4f5, $alpha: 0.5);
+  color: #f4f4f5;
+}
