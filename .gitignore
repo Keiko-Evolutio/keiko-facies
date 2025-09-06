@@ -120,5 +120,8 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-/.claude/
-!/CLAUDE.md
+
+# Claude AI Assistant
+.claude/
+/CLAUDE.md
+/.mcp.json
